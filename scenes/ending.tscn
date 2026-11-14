@@ -4,3 +4,13 @@
 
 [node name="Ending" type="Node2D" unique_id=455221799]
 script = ExtResource("1_mqjok")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1166304523]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Textlable" type="Label" parent="." unique_id=313327161]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Music" type="AudioStreamPlayer" parent="." unique_id=2112851793]

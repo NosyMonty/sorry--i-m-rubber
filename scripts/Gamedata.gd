@@ -1,16 +1,16 @@
-extends Node
-## Autoload this as "Game" (Project Settings -> Globals -> Autoload).
-## Holds fight progress, all enemy data (edit the jokes here!), and helpers.
+class_name GameData
+extends RefCounted
+## NOT an autoload. Just a script with a class_name, so any other script can read
+## GameData.enemies and GameData.fight_index. Needs Godot 4.1+ (static vars).
+##
+## need     = frustration required before the correct Act works
+## hit_gain = frustration added each time a bullet bounces off Noah
+## interval = seconds between bullet spawns (lower = harder)
+## patterns = method names in Battle.gd, cycled in order
 
-var fight_index := 0
-var music := AudioStreamPlayer.new()
-var current_track := ""
+static var fight_index := 0
 
-# need      = frustration required before the correct Act works
-# hit_gain  = frustration added each time a bullet bounces off Noah
-# interval  = seconds between bullet spawns (lower = harder)
-# patterns  = method names in Battle.gd, cycled in order
-var enemies := [
+static var enemies := [
 	{
 		"name": "TODD (INTERN)",
 		"color": Color(0.95, 0.6, 0.2),
@@ -19,7 +19,6 @@ var enemies := [
 		"interval": 0.55,
 		"patterns": ["p_pin_drop", "p_pin_drop", "p_aimed"],
 		"bullet": "pin",
-		"music": "battle",
 		"intro": [
 			"* Noah Sinclair just wants a sick day.\n* All he needs is one tiny injury.",
 			"* Todd the intern blocks the way.\n* He is holding a single pin.",
@@ -53,7 +52,6 @@ var enemies := [
 		"interval": 1.3,
 		"patterns": ["p_roller", "p_roller", "p_pin_drop"],
 		"bullet": "pin",
-		"music": "battle",
 		"intro": [
 			"* Steve rumbles in on a steamroller.\n* Indoors.",
 			"* The floor is not happy about it.",
@@ -87,7 +85,6 @@ var enemies := [
 		"interval": 0.9,
 		"patterns": ["p_anvil", "p_anvil", "p_piano", "p_aimed"],
 		"bullet": "anvil",
-		"music": "battle",
 		"intro": [
 			"* Merlot the Anvil Wizard appears in a puff of smoke.",
 			"* There is a lot of smoke. You cough. So does he.",
@@ -122,7 +119,7 @@ var enemies := [
 		"interval": 0.8,
 		"patterns": ["p_needle_fan", "p_aimed", "p_needle_fan"],
 		"bullet": "needle",
-		"music": "boss",
+		"boss": true,
 		"intro": [
 			"* A giant needle blocks the doorway.",
 			"* It is the only thing here that could actually hurt you.",
@@ -150,63 +147,3 @@ var enemies := [
 		"win": ["* The Needle lowers its guard.", "* You and the Needle are now friends.", "* Noah is still entirely unscathed."],
 	},
 ]
-
-
-func _ready() -> void:
-	add_child(music)
-
-
-func start() -> void:
-	fight_index = 0
-	get_tree().change_scene_to_file("res://Battle.tscn")
-
-
-func to_title() -> void:
-	get_tree().change_scene_to_file("res://Title.tscn")
-
-
-## Returns a Sprite2D if the PNG exists, otherwise a coloured placeholder box.
-## This means the game runs before any art exists, and art just drops in.
-func make_visual(path: String, color: Color, size: Vector2) -> Node2D:
-	if ResourceLoader.exists(path):
-		var s := Sprite2D.new()
-		s.texture = load(path)
-		var tex: Vector2 = s.texture.get_size()
-		s.scale = Vector2.ONE * minf(size.x / tex.x, size.y / tex.y)
-		return s
-	var p := Polygon2D.new()
-	var h := size / 2.0
-	p.polygon = PackedVector2Array([Vector2(-h.x, -h.y), Vector2(h.x, -h.y), h, Vector2(-h.x, h.y)])
-	p.color = color
-	return p
-
-
-func _find_audio(audio_name: String) -> String:
-	for ext in ["ogg", "wav", "mp3"]:
-		var path := "res://audio/%s.%s" % [audio_name, ext]
-		if ResourceLoader.exists(path):
-			return path
-	return ""
-
-
-func sfx(audio_name: String) -> void:
-	var path := _find_audio(audio_name)
-	if path == "":
-		return
-	var p := AudioStreamPlayer.new()
-	p.stream = load(path)
-	add_child(p)
-	p.finished.connect(p.queue_free)
-	p.play()
-
-
-func play_music(audio_name: String) -> void:
-	if audio_name == current_track:
-		return
-	current_track = audio_name
-	var path := _find_audio(audio_name)
-	if path == "":
-		music.stop()
-		return
-	music.stream = load(path)
-	music.play()

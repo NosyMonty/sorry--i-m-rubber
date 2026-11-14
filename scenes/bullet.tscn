@@ -1,8 +1,7 @@
 [gd_scene format=3 uid="uid://cormufoge53yh"]
 
-[ext_resource type="Script" uid="uid://b47gkm6sujiru" path="res://scripts/Bullet.gd" id="1_mkf8s"]
-
 [node name="bullet" type="Node2D" unique_id=173013558]
 
-[node name="Area2D" type="Area2D" parent="." unique_id=1684965714]
-script = ExtResource("1_mkf8s")
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1731232299]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1403494707]

@@ -9,16 +9,16 @@ script = ExtResource("1_4ignj")
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="Title Lable" type="Label" parent="." unique_id=1899923936]
+[node name="TitleLable" type="Label" parent="." unique_id=1899923936]
 offset_right = 40.0
 offset_bottom = 23.0
 
-[node name="Label2" type="Label" parent="." unique_id=1153118252]
+[node name="SubtitleLabel" type="Label" parent="." unique_id=1153118252]
 offset_right = 40.0
 offset_bottom = 23.0
 
-[node name="Label3" type="Label" parent="." unique_id=2101596886]
+[node name="PromptLabel" type="Label" parent="." unique_id=2101596886]
 offset_right = 40.0
 offset_bottom = 23.0
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=190514548]
+[node name="Music" type="AudioStreamPlayer" parent="." unique_id=190514548]

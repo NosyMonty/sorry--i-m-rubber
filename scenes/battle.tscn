@@ -1,6 +1,55 @@
 [gd_scene format=3 uid="uid://4h6nlhqcbwks"]
 
 [ext_resource type="Script" uid="uid://v2mqdni0opyd" path="res://scripts/Battle.gd" id="1_dn72j"]
+[ext_resource type="PackedScene" uid="uid://dll2nnd65ibem" path="res://scenes/soul.tscn" id="2_th188"]
 
 [node name="Battle" type="Node2D" unique_id=1139459454]
 script = ExtResource("1_dn72j")
+
+[node name="Background" type="ColorRect" parent="." unique_id=466219376]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Enemy" type="Sprite2D" parent="." unique_id=1456584737]
+
+[node name="Arena" type="Node2D" parent="." unique_id=455081891]
+
+[node name="BoxFill" type="ColorRect" parent="Arena" unique_id=334125742]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BoxBorder" type="ReferenceRect" parent="Arena" unique_id=1568338836]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DialogueLabel" type="Label" parent="Arena" unique_id=2111587670]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Bullets" type="Node2D" parent="Arena" unique_id=290622829]
+
+[node name="soul" parent="Arena" unique_id=500866723 instance=ExtResource("2_th188")]
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1992409773]
+
+[node name="NameLabel" type="Label" parent="HUD" unique_id=1792952164]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="FrustrationBar" type="ProgressBar" parent="HUD" unique_id=2081188732]
+offset_right = 4.0
+offset_bottom = 27.0
+
+[node name="BarLabel" type="Label" parent="HUD" unique_id=1717433265]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Music" type="AudioStreamPlayer" parent="." unique_id=1810161685]
+
+[node name="BossMusic" type="AudioStreamPlayer" parent="." unique_id=434486418]
+
+[node name="SfxBoing" type="AudioStreamPlayer" parent="." unique_id=1040018374]
+
+[node name="SfxSelect" type="AudioStreamPlayer" parent="." unique_id=718469548]
+
+[node name="SfxWin" type="AudioStreamPlayer" parent="." unique_id=1150824426]

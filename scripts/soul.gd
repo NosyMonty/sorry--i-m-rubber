@@ -1,35 +1,28 @@
 class_name Soul
 extends Area2D
-## Noah in the battle box. Rubbery movement, bounces off the walls,
-## squashes and stretches when a bullet hits him (no damage, ever).
+## Noah in the battle box. Attach to the root of Soul.tscn.
+## Needs children named exactly: Sprite2D, CollisionShape2D (circle).
 
 signal hit(bullet: Bullet)
 
-var box_rect := Rect2(-280, -110, 560, 220)
-var max_speed := 260.0
-var accel := 1100.0
-var bounciness := 0.85   # 1.0 = perfectly bouncy, 0 = stops dead
-var radius := 14.0
+@export var radius := 14.0            # keep equal to the circle shape's radius
+@export var max_speed := 260.0
+@export var accel := 1100.0
+@export var bounciness := 0.85        # 1.0 = perfectly bouncy, 0 = stops dead
 
+var box_rect := Rect2(-280, -110, 560, 220)   # Battle.gd overwrites this
 var velocity := Vector2.ZERO
 var invuln := 0.0
 var active := false
-var visual: Node2D
 var base_scale := Vector2.ONE
+
+@onready var sprite: Sprite2D = $Sprite2D
 
 
 func _ready() -> void:
-	var shape := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
-	circle.radius = radius
-	shape.shape = circle
-	add_child(shape)
-
-	visual = Game.make_visual("res://art/noah.png", Color(1.0, 0.45, 0.6), Vector2(radius * 2.6, radius * 2.6))
-	add_child(visual)
-	base_scale = visual.scale
-
+	base_scale = sprite.scale
 	area_entered.connect(_on_area_entered)
+	set_active(false)
 
 
 func set_active(value: bool) -> void:
@@ -38,9 +31,8 @@ func set_active(value: bool) -> void:
 	set_deferred("monitoring", value)
 	velocity = Vector2.ZERO
 	invuln = 0.0
-	if visual:
-		visual.scale = base_scale
-		visual.modulate.a = 1.0
+	sprite.scale = base_scale
+	sprite.modulate.a = 1.0
 
 
 func _physics_process(delta: float) -> void:
@@ -68,7 +60,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -absf(velocity.y) * bounciness
 
 	# Blink while invulnerable
-	visual.modulate.a = 0.45 if (invuln > 0.0 and int(invuln * 20.0) % 2 == 0) else 1.0
+	sprite.modulate.a = 0.45 if (invuln > 0.0 and int(invuln * 20.0) % 2 == 0) else 1.0
 
 
 func _on_area_entered(area: Area2D) -> void:
@@ -86,6 +78,7 @@ func _on_area_entered(area: Area2D) -> void:
 
 func _squash() -> void:
 	var tw := create_tween()
-	tw.tween_property(visual, "scale", Vector2(base_scale.x * 1.7, base_scale.y * 0.4), 0.07)
-	tw.tween_property(visual, "scale", Vector2(base_scale.x * 0.7, base_scale.y * 1.5), 0.10)
-	tw.tween_property(visual, "scale", base_scale, 0.30).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sprite, "scale", Vector2(base_scale.x * 1.7, base_scale.y * 0.4), 0.07)
+	tw.tween_property(sprite, "scale", Vector2(base_scale.x * 0.7, base_scale.y * 1.5), 0.10)
+	tw.tween_property(sprite, "scale", base_scale, 0.30).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	

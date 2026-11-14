@@ -2,10 +2,20 @@ extends Node2D
 
 enum State { TEXT, MENU, DODGE }
 
-const BOX := Rect2(-280, -110, 560, 220)   # relative to the arena centre
+const BULLET_SCENE := preload("res://scenes/bullet.tscn")
+const BOX := Rect2(-280, -110, 560, 220)   # relative to the Arena node
 const ARENA_POS := Vector2(640, 470)       # for a 1280x720 window
 const ENEMY_POS := Vector2(640, 170)
+const ENEMY_SIZE := 260.0
 const DODGE_TIME := 7.0
+
+# Fill these in the Inspector (select the Battle root node)
+@export var enemy_textures: Array[Texture2D] = []   # 4 entries: Todd, Steve, Merlot, Needle
+@export var tex_pin: Texture2D
+@export var tex_roller: Texture2D
+@export var tex_anvil: Texture2D
+@export var tex_piano: Texture2D
+@export var tex_needle: Texture2D
 
 var enemy: Dictionary
 var state := State.TEXT
@@ -20,95 +30,62 @@ var menu_i := 0
 var dodge_t := 0.0
 var spawn_t := 0.0
 var pattern_i := 0
-var t := 0.0
+var time := 0.0
 
-var arena: Node2D
-var soul: Soul
-var text_label: Label
-var bar: ProgressBar
-var bar_label: Label
-var enemy_vis: Node2D
+@onready var enemy_sprite: Sprite2D = $Enemy
+@onready var arena: Node2D = $Arena
+@onready var text_label: Label = $Arena/DialogueLabel
+@onready var bullets: Node2D = $Arena/Bullets
+@onready var soul: Soul = $Arena/Soul
+@onready var name_label: Label = $HUD/NameLabel
+@onready var bar: ProgressBar = $HUD/FrustrationBar
+@onready var bar_label: Label = $HUD/BarLabel
+@onready var music: AudioStreamPlayer = $Music
+@onready var boss_music: AudioStreamPlayer = $BossMusic
+@onready var sfx_boing: AudioStreamPlayer = $SfxBoing
+@onready var sfx_select: AudioStreamPlayer = $SfxSelect
+@onready var sfx_win: AudioStreamPlayer = $SfxWin
 
 
 func _ready() -> void:
-	enemy = Game.enemies[Game.fight_index]
-	Game.play_music(enemy.music)
-	_build_ui()
+	enemy = GameData.enemies[GameData.fight_index]
+
+	arena.position = ARENA_POS
+	soul.box_rect = BOX
+	soul.hit.connect(_on_soul_hit)
+
+	name_label.text = enemy.name
+	bar.max_value = enemy.need
+	bar.value = 0.0
+	bar_label.text = "FRUSTRATION"
+
+	_setup_enemy_sprite()
+
+	if enemy.get("boss", false):
+		boss_music.play()
+	else:
+		music.play()
+
 	_say_lines(enemy.intro, _show_menu)
 
 
-func _build_ui() -> void:
-	var bg := ColorRect.new()
-	bg.color = Color(0.1, 0.1, 0.14)
-	bg.size = Vector2(1280, 720)
-	add_child(bg)
-
-	enemy_vis = Game.make_visual("res://art/enemy_%d.png" % Game.fight_index, enemy.color, Vector2(260, 260))
-	enemy_vis.position = ENEMY_POS
-	add_child(enemy_vis)
-
-	arena = Node2D.new()
-	arena.position = ARENA_POS
-	add_child(arena)
-
-	var box_bg := ColorRect.new()
-	box_bg.color = Color.BLACK
-	box_bg.position = BOX.position
-	box_bg.size = BOX.size
-	arena.add_child(box_bg)
-
-	var border := Line2D.new()
-	border.width = 6.0
-	border.closed = true
-	border.points = PackedVector2Array([
-		BOX.position,
-		Vector2(BOX.end.x, BOX.position.y),
-		BOX.end,
-		Vector2(BOX.position.x, BOX.end.y),
-	])
-	arena.add_child(border)
-
-	text_label = Label.new()
-	text_label.position = BOX.position + Vector2(24, 16)
-	text_label.size = BOX.size - Vector2(48, 32)
-	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_label.add_theme_font_size_override("font_size", 28)
-	arena.add_child(text_label)
-
-	soul = Soul.new()
-	soul.box_rect = BOX
-	soul.hit.connect(_on_soul_hit)
-	arena.add_child(soul)
-	soul.set_active(false)
-
-	var hud := CanvasLayer.new()
-	add_child(hud)
-
-	var name_label := Label.new()
-	name_label.text = enemy.name
-	name_label.position = Vector2(40, 20)
-	name_label.add_theme_font_size_override("font_size", 32)
-	hud.add_child(name_label)
-
-	bar = ProgressBar.new()
-	bar.position = Vector2(40, 70)
-	bar.size = Vector2(360, 28)
-	bar.custom_minimum_size = Vector2(360, 28)
-	bar.max_value = enemy.need
-	bar.value = 0.0
-	bar.show_percentage = false
-	hud.add_child(bar)
-
-	bar_label = Label.new()
-	bar_label.text = "FRUSTRATION"
-	bar_label.position = Vector2(40, 102)
-	hud.add_child(bar_label)
+func _setup_enemy_sprite() -> void:
+	var idx := GameData.fight_index
+	var tex: Texture2D = enemy_textures[idx] if idx < enemy_textures.size() else null
+	if tex:
+		enemy_sprite.texture = tex
+		enemy_sprite.modulate = Color.WHITE
+	else:
+		enemy_sprite.modulate = enemy.color   # tint the placeholder instead
+	if enemy_sprite.texture:
+		var biggest := maxf(enemy_sprite.texture.get_width(), enemy_sprite.texture.get_height())
+		enemy_sprite.scale = Vector2.ONE * (ENEMY_SIZE / biggest)
+	enemy_sprite.position = ENEMY_POS
 
 
 func _update_bar() -> void:
 	create_tween().tween_property(bar, "value", frustration, 0.2)
 	bar_label.text = "AT WIT'S END!" if frustration >= enemy.need else "FRUSTRATION"
-
 
 func _say_lines(lines: Array, next: Callable) -> void:
 	state = State.TEXT
@@ -163,11 +140,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		State.MENU:
 			if event.is_action_pressed("ui_up"):
 				menu_i = wrapi(menu_i - 1, 0, enemy.acts.size())
-				Game.sfx("select")
+				sfx_select.play()
 				_draw_menu()
 			elif event.is_action_pressed("ui_down"):
 				menu_i = wrapi(menu_i + 1, 0, enemy.acts.size())
-				Game.sfx("select")
+				sfx_select.play()
 				_draw_menu()
 			elif event.is_action_pressed("ui_accept"):
 				_choose(menu_i)
@@ -175,11 +152,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _choose(i: int) -> void:
 	var act: Dictionary = enemy.acts[i]
-	Game.sfx("select")
+	sfx_select.play()
 
 	if act.get("correct", false):
 		if frustration >= enemy.need:
-			Game.sfx("win")
+			sfx_win.play()
 			_say_lines(act.lines + enemy.win, _next_fight)
 		else:
 			_say_lines(act.early, _start_dodge)
@@ -191,9 +168,9 @@ func _choose(i: int) -> void:
 
 
 func _next_fight() -> void:
-	Game.fight_index += 1
-	if Game.fight_index >= Game.enemies.size():
-		get_tree().change_scene_to_file("res://Ending.tscn")
+	GameData.fight_index += 1
+	if GameData.fight_index >= GameData.enemies.size():
+		get_tree().change_scene_to_file("res://scenes/ending.tscn")
 	else:
 		get_tree().reload_current_scene()
 
@@ -208,7 +185,8 @@ func _start_dodge() -> void:
 
 func _end_dodge() -> void:
 	soul.set_active(false)
-	get_tree().call_group("bullets", "queue_free")
+	for b in bullets.get_children():
+		b.queue_free()
 	if frustration >= enemy.need:
 		_say_lines(enemy.ready_lines, _show_menu)
 	else:
@@ -216,8 +194,8 @@ func _end_dodge() -> void:
 
 
 func _process(delta: float) -> void:
-	t += delta
-	enemy_vis.position.y = ENEMY_POS.y + sin(t * 2.0) * 6.0
+	time += delta
+	enemy_sprite.position.y = ENEMY_POS.y + sin(time * 2.0) * 6.0
 
 	if state != State.DODGE:
 		return
@@ -233,15 +211,15 @@ func _process(delta: float) -> void:
 
 
 func _on_soul_hit(bullet: Bullet) -> void:
-	Game.sfx("boing")
+	sfx_boing.play()
 	bullet.reflect()
 	frustration = minf(frustration + enemy.hit_gain, enemy.need)
 	_update_bar()
 	_pop_text("BOING!", soul.position)
 
 	var tw := create_tween()
-	tw.tween_property(enemy_vis, "rotation", 0.15, 0.05)
-	tw.tween_property(enemy_vis, "rotation", 0.0, 0.2)
+	tw.tween_property(enemy_sprite, "rotation", 0.15, 0.05)
+	tw.tween_property(enemy_sprite, "rotation", 0.0, 0.2)
 
 
 func _pop_text(txt: String, pos: Vector2) -> void:
@@ -255,13 +233,21 @@ func _pop_text(txt: String, pos: Vector2) -> void:
 	tw.tween_property(l, "position:y", l.position.y - 50.0, 0.6)
 	tw.tween_property(l, "modulate:a", 0.0, 0.6)
 	tw.chain().tween_callback(l.queue_free)
-	
+
+func _tex(kind: String) -> Texture2D:
+	match kind:
+		"pin": return tex_pin
+		"roller": return tex_roller
+		"anvil": return tex_anvil
+		"piano": return tex_piano
+		"needle": return tex_needle
+	return null
+
 
 func _spawn(kind: String, pos: Vector2, vel: Vector2, grav := 0.0, r := 14.0) -> void:
-	var b := Bullet.new()
-	b.setup(kind, pos, vel, grav, r)
-	arena.add_child(b)
-
+	var b: Bullet = BULLET_SCENE.instantiate()
+	bullets.add_child(b)          # must be in the tree before setup()
+	b.setup(_tex(kind), pos, vel, grav, r)
 
 func _rand_x() -> float:
 	return randf_range(BOX.position.x + 30.0, BOX.end.x - 30.0)
@@ -296,3 +282,4 @@ func p_needle_fan() -> void:
 	var base := PI / 2.0 + sin(dodge_t * 2.0) * 0.5
 	for i in range(-2, 3):
 		_spawn("needle", Vector2(0, BOX.position.y - 20.0), Vector2.from_angle(base + i * 0.35) * 240.0)
+		
