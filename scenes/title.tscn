@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://d1rldeqlsnxt"]
+
+[ext_resource type="Script" uid="uid://bk00b5o7cy8yo" path="res://scripts/Title.gd" id="1_4ignj"]
+
+[node name="Title" type="Node2D" unique_id=1958260205]
+script = ExtResource("1_4ignj")
+
+[node name="Background" type="ColorRect" parent="." unique_id=312115275]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Title Lable" type="Label" parent="." unique_id=1899923936]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Label2" type="Label" parent="." unique_id=1153118252]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Label3" type="Label" parent="." unique_id=2101596886]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=190514548]

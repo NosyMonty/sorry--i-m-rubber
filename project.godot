@@ -11,8 +11,13 @@ config_version=5
 [application]
 
 config/name="Sorry, I’m Rubber"
+run/main_scene="uid://d1rldeqlsnxt"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Game="*uid://dj4c8fjfl8wdw"
 
 [physics]
 
