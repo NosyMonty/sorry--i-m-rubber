@@ -1,10 +1,15 @@
 [gd_scene format=3 uid="uid://4h6nlhqcbwks"]
 
+[ext_resource type="Script" uid="uid://3fcjwn66qfst" path="res://scripts/battle_box.gd" id="1_th188"]
+[ext_resource type="Script" uid="uid://bohiom7bnc36f" path="res://scripts/soul.gd" id="2_p1qf1"]
+
 [node name="Battle" type="Node2D" unique_id=54208533]
 
 [node name="BattleBox" type="Node2D" parent="." unique_id=1011355504]
+script = ExtResource("1_th188")
 
 [node name="soul" type="Area2D" parent="BattleBox" unique_id=91868315]
+script = ExtResource("2_p1qf1")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BattleBox/soul" unique_id=834048495]
 
