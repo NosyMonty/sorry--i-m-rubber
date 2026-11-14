@@ -9,7 +9,7 @@ script = ExtResource("1_mqjok")
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="Textlable" type="Label" parent="." unique_id=313327161]
+[node name="TextLable" type="Label" parent="." unique_id=313327161]
 offset_right = 40.0
 offset_bottom = 23.0
 

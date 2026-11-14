@@ -21,6 +21,10 @@ static var enemies := [
 		"intro": [
 			"* Noah Sinclair just wants a sick day.\n* All he needs is one tiny injury.",
 			"* Todd the intern blocks the way.\n* He is holding a single pin.",
+			"* HOW TO PLAY:\n* Pick an Act with UP and DOWN, then press ENTER.",
+			"* When the dodge starts, steer Noah with the ARROW KEYS.\n* He's rubber, so he slides and bounces off the walls.",
+			"* Getting hit can't hurt him. Bullets bounce back and make the enemy more frustrated.",
+			"* Fill the Frustration bar, then find the Act that works. Watch your turns!",
 		],
 		"turn_lines": [
 			"* Todd lunges again. Nothing happens.",
