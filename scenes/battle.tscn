@@ -7,42 +7,63 @@
 script = ExtResource("1_dn72j")
 
 [node name="Background" type="ColorRect" parent="." unique_id=466219376]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.101960786, 0.101960786, 0.14117648, 1)
 
 [node name="Enemy" type="Sprite2D" parent="." unique_id=1456584737]
 
 [node name="Arena" type="Node2D" parent="." unique_id=455081891]
 
 [node name="BoxFill" type="ColorRect" parent="Arena" unique_id=334125742]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = -280.0
+offset_top = -110.0
+offset_right = 280.0
+offset_bottom = 110.0
+color = Color(0, 0, 0, 1)
 
 [node name="BoxBorder" type="ReferenceRect" parent="Arena" unique_id=1568338836]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = -280.0
+offset_top = -110.0
+offset_right = 280.0
+offset_bottom = 110.0
+border_color = Color(1, 1, 1, 1)
+border_width = 6.0
+editor_only = false
 
 [node name="DialogueLabel" type="Label" parent="Arena" unique_id=2111587670]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = -256.0
+offset_top = -94.0
+offset_right = 256.0
+offset_bottom = 94.0
+theme_override_font_sizes/font_size = 28
+autowrap_mode = 3
 
 [node name="Bullets" type="Node2D" parent="Arena" unique_id=290622829]
 
-[node name="soul" parent="Arena" unique_id=500866723 instance=ExtResource("2_th188")]
+[node name="Soul" parent="Arena" unique_id=500866723 instance=ExtResource("2_th188")]
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1992409773]
 
 [node name="NameLabel" type="Label" parent="HUD" unique_id=1792952164]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 40.0
+offset_top = 20.0
+offset_right = 740.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 32
 
 [node name="FrustrationBar" type="ProgressBar" parent="HUD" unique_id=2081188732]
-offset_right = 4.0
-offset_bottom = 27.0
+offset_left = 40.0
+offset_top = 70.0
+offset_right = 400.0
+offset_bottom = 98.0
+show_percentage = false
 
 [node name="BarLabel" type="Label" parent="HUD" unique_id=1717433265]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 40.0
+offset_top = 102.0
+offset_right = 400.0
+offset_bottom = 132.0
 
 [node name="Music" type="AudioStreamPlayer" parent="." unique_id=1810161685]
 

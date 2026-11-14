@@ -4,7 +4,7 @@ extends Area2D
 ## Needs children named exactly: Sprite2D, CollisionShape2D.
 
 var velocity := Vector2.ZERO
-var fall_accel := 0.0
+var fall_accel := 0.0     # not called "gravity": Area2D already has that property
 var reflected := false
 
 @onready var sprite: Sprite2D = $Sprite2D

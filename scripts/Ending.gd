@@ -1,5 +1,6 @@
 extends Node2D
 ## Root of Ending.tscn. Needs a Label child named TextLabel.
+## Scene paths live in GameData.gd.
 
 const LINES := [
 	"* Noah Sinclair never did get hurt.",
@@ -19,9 +20,11 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_accept"):
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().change_scene_to_file(GameData.TITLE_PATH)
+	elif event.is_action_pressed("ui_accept"):
 		i += 1
 		if i >= LINES.size():
-			get_tree().change_scene_to_file("res://scenes/title.tscn")
+			get_tree().change_scene_to_file(GameData.TITLE_PATH)
 		else:
 			label.text = LINES[i]

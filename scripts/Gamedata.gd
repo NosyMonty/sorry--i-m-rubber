@@ -1,12 +1,10 @@
 class_name GameData
 extends RefCounted
-## NOT an autoload. Just a script with a class_name, so any other script can read
-## GameData.enemies and GameData.fight_index. Needs Godot 4.1+ (static vars).
-##
-## need     = frustration required before the correct Act works
-## hit_gain = frustration added each time a bullet bounces off Noah
-## interval = seconds between bullet spawns (lower = harder)
-## patterns = method names in Battle.gd, cycled in order
+
+const TITLE_PATH := "res://scenes/title.tscn"
+const BATTLE_PATH := "res://scenes/battle.tscn"
+const ENDING_PATH := "res://scenes/ending.tscn"
+const BULLET_PATH := "res://scenes/bullet.tscn"
 
 static var fight_index := 0
 
@@ -17,6 +15,7 @@ static var enemies := [
 		"need": 30.0,
 		"hit_gain": 10.0,
 		"interval": 0.55,
+		"turn_limit": 6,
 		"patterns": ["p_pin_drop", "p_pin_drop", "p_aimed"],
 		"bullet": "pin",
 		"intro": [
@@ -50,6 +49,7 @@ static var enemies := [
 		"need": 40.0,
 		"hit_gain": 10.0,
 		"interval": 1.3,
+		"turn_limit": 7,
 		"patterns": ["p_roller", "p_roller", "p_pin_drop"],
 		"bullet": "pin",
 		"intro": [
@@ -83,6 +83,7 @@ static var enemies := [
 		"need": 50.0,
 		"hit_gain": 10.0,
 		"interval": 0.9,
+		"turn_limit": 8,
 		"patterns": ["p_anvil", "p_anvil", "p_piano", "p_aimed"],
 		"bullet": "anvil",
 		"intro": [
@@ -117,6 +118,7 @@ static var enemies := [
 		"need": 50.0,
 		"hit_gain": 10.0,
 		"interval": 0.8,
+		"turn_limit": 8,
 		"patterns": ["p_needle_fan", "p_aimed", "p_needle_fan"],
 		"bullet": "needle",
 		"boss": true,

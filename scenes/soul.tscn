@@ -225,13 +225,19 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mqjok"]
+size = Vector2(20, 32)
+
 [node name="Soul" type="Area2D" unique_id=82598672]
 script = ExtResource("1_jnmxf")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=733943423]
 sprite_frames = SubResource("SpriteFrames_en0qn")
 animation = &"Run"
+frame_progress = 0.10634213
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=597376212]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_mqjok")
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]

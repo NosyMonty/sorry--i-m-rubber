@@ -1,8 +1,13 @@
 extends Node2D
+## Root of Battle.tscn. Flow: intro text -> menu (pick an Act) -> response text ->
+## dodge phase -> menu ... Getting hit bounces the bullet back and fills the
+## Frustration bar; once full, the hidden correct Act ends the fight.
+## Run out of turns first and it's Game Over (Retry / Back to title).
+## Esc returns to the title at any time.
+## Scene paths live in GameData.gd.
 
-enum State { TEXT, MENU, DODGE }
+enum State { TEXT, MENU, DODGE, OVER }
 
-const BULLET_SCENE := preload("res://scenes/bullet.tscn")
 const BOX := Rect2(-280, -110, 560, 220)   # relative to the Arena node
 const ARENA_POS := Vector2(640, 470)       # for a 1280x720 window
 const ENEMY_POS := Vector2(640, 170)
@@ -20,6 +25,7 @@ const DODGE_TIME := 7.0
 var enemy: Dictionary
 var state := State.TEXT
 var frustration := 0.0
+var turns_left := 0
 
 var queue: Array = []
 var after_lines: Callable
@@ -32,6 +38,7 @@ var spawn_t := 0.0
 var pattern_i := 0
 var time := 0.0
 
+@onready var bullet_scene: PackedScene = load(GameData.BULLET_PATH)
 @onready var enemy_sprite: Sprite2D = $Enemy
 @onready var arena: Node2D = $Arena
 @onready var text_label: Label = $Arena/DialogueLabel
@@ -54,7 +61,8 @@ func _ready() -> void:
 	soul.box_rect = BOX
 	soul.hit.connect(_on_soul_hit)
 
-	name_label.text = enemy.name
+	turns_left = enemy.turn_limit
+	_update_header()
 	bar.max_value = enemy.need
 	bar.value = 0.0
 	bar_label.text = "FRUSTRATION"
@@ -70,7 +78,7 @@ func _ready() -> void:
 
 
 func _setup_enemy_sprite() -> void:
-	var idx := GameData.fight_index
+	var idx: int = GameData.fight_index
 	var tex: Texture2D = enemy_textures[idx] if idx < enemy_textures.size() else null
 	if tex:
 		enemy_sprite.texture = tex
@@ -81,6 +89,10 @@ func _setup_enemy_sprite() -> void:
 		var biggest := maxf(enemy_sprite.texture.get_width(), enemy_sprite.texture.get_height())
 		enemy_sprite.scale = Vector2.ONE * (ENEMY_SIZE / biggest)
 	enemy_sprite.position = ENEMY_POS
+
+
+func _update_header() -> void:
+	name_label.text = "%s     TURNS LEFT: %d" % [enemy.name, maxi(turns_left, 0)]
 
 
 func _update_bar() -> void:
@@ -127,6 +139,10 @@ func _draw_menu() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().change_scene_to_file(GameData.TITLE_PATH)
+		return
+
 	match state:
 		State.TEXT:
 			if event.is_action_pressed("ui_accept"):
@@ -148,11 +164,26 @@ func _unhandled_input(event: InputEvent) -> void:
 				_draw_menu()
 			elif event.is_action_pressed("ui_accept"):
 				_choose(menu_i)
+		State.OVER:
+			if event.is_action_pressed("ui_up") or event.is_action_pressed("ui_down"):
+				menu_i = 1 - menu_i
+				sfx_select.play()
+				_draw_over_menu()
+			elif event.is_action_pressed("ui_accept"):
+				if menu_i == 0:
+					get_tree().reload_current_scene()   # retry this fight
+				else:
+					get_tree().change_scene_to_file(GameData.TITLE_PATH)
 
 
 func _choose(i: int) -> void:
 	var act: Dictionary = enemy.acts[i]
 	sfx_select.play()
+
+	# Out of turns: only the correct Act (with a full bar) can still save you
+	if turns_left <= 0 and not act.get("correct", false):
+		_game_over()
+		return
 
 	if act.get("correct", false):
 		if frustration >= enemy.need:
@@ -170,12 +201,14 @@ func _choose(i: int) -> void:
 func _next_fight() -> void:
 	GameData.fight_index += 1
 	if GameData.fight_index >= GameData.enemies.size():
-		get_tree().change_scene_to_file("res://scenes/ending.tscn")
+		get_tree().change_scene_to_file(GameData.ENDING_PATH)
 	else:
 		get_tree().reload_current_scene()
 
 func _start_dodge() -> void:
 	state = State.DODGE
+	turns_left -= 1
+	_update_header()
 	text_label.text = ""
 	dodge_t = DODGE_TIME
 	spawn_t = 0.6
@@ -187,11 +220,36 @@ func _end_dodge() -> void:
 	soul.set_active(false)
 	for b in bullets.get_children():
 		b.queue_free()
+	if turns_left <= 0 and frustration < enemy.need:
+		_game_over()
+		return
 	if frustration >= enemy.need:
 		_say_lines(enemy.ready_lines, _show_menu)
 	else:
 		_say_lines([enemy.turn_lines.pick_random()], _show_menu)
 
+func _game_over() -> void:
+	soul.set_active(false)
+	for b in bullets.get_children():
+		b.queue_free()
+	music.stop()
+	boss_music.stop()
+	_say_lines(["* Noah's shift starts.\n* No injury, no sick day.", "GAME OVER"], _show_over_menu)
+
+
+func _show_over_menu() -> void:
+	state = State.OVER
+	menu_i = 0
+	_draw_over_menu()
+
+
+func _draw_over_menu() -> void:
+	var options := ["Retry this fight", "Back to title"]
+	var s := ""
+	for i in options.size():
+		s += ("> " if i == menu_i else "   ") + options[i] + "\n"
+	text_label.text = s
+	text_label.visible_ratio = 1.0
 
 func _process(delta: float) -> void:
 	time += delta
@@ -245,9 +303,10 @@ func _tex(kind: String) -> Texture2D:
 
 
 func _spawn(kind: String, pos: Vector2, vel: Vector2, grav := 0.0, r := 14.0) -> void:
-	var b: Bullet = BULLET_SCENE.instantiate()
+	var b: Bullet = bullet_scene.instantiate()
 	bullets.add_child(b)          # must be in the tree before setup()
 	b.setup(_tex(kind), pos, vel, grav, r)
+
 
 func _rand_x() -> float:
 	return randf_range(BOX.position.x + 30.0, BOX.end.x - 30.0)
