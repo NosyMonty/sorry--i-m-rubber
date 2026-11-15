@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cklcipi8nym06"
+path="res://.godot/imported/Boss Battle music.mp3-602a45b3c8c9338c57a8c71ac8fb2a15.mp3str"
+
+[deps]
+
+source_file="res://assets/Boss Battle music.mp3"
+dest_files=["res://.godot/imported/Boss Battle music.mp3-602a45b3c8c9338c57a8c71ac8fb2a15.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

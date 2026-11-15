@@ -1,16 +1,28 @@
 [gd_scene format=3 uid="uid://d3fmkyuh2mpcr"]
 
 [ext_resource type="Script" uid="uid://c1o8028ru7dpb" path="res://scripts/Ending.gd" id="1_mqjok"]
+[ext_resource type="AudioStream" uid="uid://de6x4wn8p0o27" path="res://assets/music.mp3" id="2_fyrdv"]
 
 [node name="Ending" type="Node2D" unique_id=455221799]
 script = ExtResource("1_mqjok")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1166304523]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.101960786, 0.101960786, 0.14117648, 1)
 
 [node name="TextLable" type="Label" parent="." unique_id=313327161]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 134.0
+offset_top = 220.0
+offset_right = 1134.0
+offset_bottom = 259.0
+theme_override_font_sizes/font_size = 28
+
+[node name="HintLabel" type="Label" parent="." unique_id=1554874073]
+offset_top = 620.0
+offset_right = 1280.0
+offset_bottom = 660.0
 
 [node name="Music" type="AudioStreamPlayer" parent="." unique_id=2112851793]
+stream = ExtResource("2_fyrdv")
+autoplay = true
